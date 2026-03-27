@@ -1,0 +1,115 @@
+
+
+# ============================================================
+# Network Topology Mapping Lab — CAPEC-309
+# IT&C 266 Attack Pattern Repository
+# Author: Gabriel Ruegner
+#
+# Architecture:
+#   DMZ (10.10.10.0/24) — web, dns, mail, attacker
+#   Internal (10.10.20.0/24) — file-server, db-server
+#   Router bridges both subnets
+# ============================================================
+
+networks:
+  dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.254
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.20.0/24
+          gateway: 10.10.20.254
+
+services:
+
+  # ── Router ── bridges DMZ and Internal ──────────────────────
+  router:
+    build: ./router
+    container_name: router
+    hostname: gateway
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      dmz:
+        ipv4_address: 10.10.10.1
+      internal:
+        ipv4_address: 10.10.20.1
+    restart: unless-stopped
+
+  # ── DMZ Hosts ──────────────────────────────────────────────
+
+  web-server:
+    build: ./web-server
+    container_name: web-server
+    hostname: webhost
+    networks:
+      dmz:
+        ipv4_address: 10.10.10.10
+    restart: unless-stopped
+
+  dns-server:
+    build: ./dns-server
+    container_name: dns-server
+    hostname: ns1
+    networks:
+      dmz:
+        ipv4_address: 10.10.10.20
+    restart: unless-stopped
+
+  mail-server:
+    build: ./mail-server
+    container_name: mail-server
+    hostname: mail
+    networks:
+      dmz:
+        ipv4_address: 10.10.10.30
+    restart: unless-stopped
+
+  # ── Internal Hosts ─────────────────────────────────────────
+
+  file-server:
+    build: ./file-server
+    container_name: file-server
+    hostname: fileshare
+    networks:
+      internal:
+        ipv4_address: 10.10.20.10
+    restart: unless-stopped
+
+  db-server:
+    build: ./db-server
+    container_name: db-server
+    hostname: dbhost
+    networks:
+      internal:
+        ipv4_address: 10.10.20.20
+    restart: unless-stopped
+
+  # ── Attacker Box ───────────────────────────────────────────
+
+  attacker:
+    build: ./attacker
+    container_name: attacker
+    hostname: kali
+    stdin_open: true
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - router
+      - web-server
+      - dns-server
+      - mail-server
+      - file-server
+      - db-server
+    networks:
+      dmz:
+        ipv4_address: 10.10.10.50
+    restart: unless-stopped

@@ -1,0 +1,7 @@
+# Force LF line endings for shell scripts — Windows CRLF breaks them in Linux containers
+*.sh text eol=lf
+*.conf text eol=lf
+*.zone text eol=lf
+*.html text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
