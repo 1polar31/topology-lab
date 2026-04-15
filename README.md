@@ -112,6 +112,11 @@ You'll see a welcome banner with your starting info. You're on 10.10.10.50 in th
 See [WALKTHROUGH.md](WALKTHROUGH.md) for the full step-by-step guide with exact commands and expected output.
 
 ---
+## CTF Part 2
+
+See [Mini-Topology-Lab](https://github.com/1polar31/nmap-mini-lab.git) for the full CTF that you need to complete in order to finish the assignment!
+
+---
 
 ## Cleanup
 
